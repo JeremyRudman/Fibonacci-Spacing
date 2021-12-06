@@ -1,26 +1,75 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "fibonacci-spacing" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('fibonacci-spacing.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Fibonacci Spacing!');
+	function getFibonacciArrayOfLengthN(length: number): number[] {
+		var fibonacciArray: number[] = [];
+		fibonacciArray.push(1);
+		fibonacciArray.push(1);
+		for (let i = 2; i < length; i++) {
+			fibonacciArray.push(fibonacciArray[i-1] + fibonacciArray[i-2]);
+		}
+		return fibonacciArray;
+	}
+
+	let disposable = vscode.commands.registerCommand('fibonacci-spacing.perfectSpacing', () => {
+
+		const editor  = vscode.window.activeTextEditor;
+
+		if(editor) {
+			const document = editor.document;
+			const tabSize = editor.options.tabSize;
+			const documentText = document.getText();
+			var maxNumberOfIndents = 0;
+			if(tabSize === undefined || documentText === undefined) {
+				return;
+			}
+
+			const eachLineOfDocument = documentText.split(/\r?\n/);
+			var spacesOnEachLine: string[] = [];
+			
+			eachLineOfDocument.forEach(lineText => {
+				let spacesBeforeText = lineText.match(/^\s*/);
+				if(spacesBeforeText !== null) {
+					if(spacesBeforeText[0].length > maxNumberOfIndents) {
+						maxNumberOfIndents = spacesBeforeText[0].length;
+					}
+					spacesOnEachLine.push(spacesBeforeText[0]);
+				} else {
+					spacesOnEachLine.push('');
+				}
+			});
+			let fibonacciArray: number[] = getFibonacciArrayOfLengthN(Math.floor(maxNumberOfIndents/(tabSize as number)));
+			var newSpacesOnEachLine: string[] = [];
+			spacesOnEachLine.forEach(lineSpaces => {
+				console.log(lineSpaces);
+				console.log(lineSpaces.match(/    /));
+				let numberOfIndents = lineSpaces.match(/    /)?.length;
+				if(numberOfIndents === undefined) {
+					numberOfIndents = 0;
+				}
+				let newIndents: string = '';
+				for (let i = 0; i < numberOfIndents; i++) {
+					newIndents += ' '.repeat(fibonacciArray[i]);
+				}
+				newSpacesOnEachLine.push(newIndents);
+			});
+			for (let i = 0; i < eachLineOfDocument.length; i++) {
+				eachLineOfDocument[i] = eachLineOfDocument[0].replace(/^\s*/,newSpacesOnEachLine[i]);
+			}
+			let newDocumentText: string = '';
+			eachLineOfDocument.forEach(line => {
+				newDocumentText += line + '\n';
+			});
+			console.log(newDocumentText);
+			editor.edit(editBuilder => {
+				editBuilder.replace(editor.selection, newDocumentText);
+			});
+		}
+		
 	});
 
 	context.subscriptions.push(disposable);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}

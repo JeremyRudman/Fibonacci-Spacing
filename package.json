@@ -10,14 +10,14 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:fibonacci-spacing.helloWorld"
+        "onCommand:fibonacci-spacing.perfectSpacing"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "fibonacci-spacing.helloWorld",
-				"title": "Hello World"
+				"command": "fibonacci-spacing.perfectSpacing",
+				"title": "Perfect Spacing"
 			}
 		]
 	},
