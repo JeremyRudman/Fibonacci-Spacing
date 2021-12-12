@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 					spacesOnEachLine.push('');
 				}
 			});
-			let fibonacciArray: number[] = getFibonacciArrayOfLengthN(Math.floor(maxNumberOfIndents/(tabSize as number)));
+			let fibonacciArray: number[] = getFibonacciArrayOfLengthN(Math.floor(maxNumberOfIndents));
 			var newSpacesOnEachLine: string[] = [];
 			
 			const regex = new RegExp(documentTab, 'g');
