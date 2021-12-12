@@ -4,9 +4,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	function getFibonacciArrayOfLengthN(length: number): number[] {
 		var fibonacciArray: number[] = [];
+		fibonacciArray.push(0); // this is for when there is no indents
+		fibonacciArray.push(1);	// first two numbers of the fibonacci sequence
 		fibonacciArray.push(1);
-		fibonacciArray.push(1);
-		for (let i = 2; i < length; i++) {
+		for (let i = 3; i <= length; i++) {
 			fibonacciArray.push(fibonacciArray[i-1] + fibonacciArray[i-2]);
 		}
 		return fibonacciArray;
@@ -24,6 +25,14 @@ export function activate(context: vscode.ExtensionContext) {
 			if(tabSize === undefined || documentText === undefined) {
 				return;
 			}
+			const usesTabs = !editor.options.insertSpaces;
+			let documentTab;
+			if(usesTabs) {
+				documentTab = '\t';
+			} else {
+				documentTab = ' '.repeat(tabSize as number);
+			}
+			
 
 			const eachLineOfDocument = documentText.split(/\r?\n/);
 			var spacesOnEachLine: string[] = [];
@@ -41,27 +50,24 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 			let fibonacciArray: number[] = getFibonacciArrayOfLengthN(Math.floor(maxNumberOfIndents/(tabSize as number)));
 			var newSpacesOnEachLine: string[] = [];
+			
+			const regex = new RegExp(documentTab, 'g');
 			spacesOnEachLine.forEach(lineSpaces => {
-				console.log(lineSpaces);
-				console.log(lineSpaces.match(/    /));
-				let numberOfIndents = lineSpaces.match(/    /)?.length;
+				let numberOfIndents = lineSpaces.match(regex)?.length;
 				if(numberOfIndents === undefined) {
 					numberOfIndents = 0;
 				}
 				let newIndents: string = '';
-				for (let i = 0; i < numberOfIndents; i++) {
-					newIndents += ' '.repeat(fibonacciArray[i]);
-				}
+				newIndents += ' '.repeat(fibonacciArray[numberOfIndents]);
 				newSpacesOnEachLine.push(newIndents);
 			});
-			for (let i = 0; i < eachLineOfDocument.length; i++) {
-				eachLineOfDocument[i] = eachLineOfDocument[0].replace(/^\s*/,newSpacesOnEachLine[i]);
+			for (let i = 	0; i < eachLineOfDocument.length; i++) {
+				eachLineOfDocument[i] = eachLineOfDocument[i].replace(/^\s*/,newSpacesOnEachLine[i]);
 			}
 			let newDocumentText: string = '';
 			eachLineOfDocument.forEach(line => {
 				newDocumentText += line + '\n';
 			});
-			console.log(newDocumentText);
 			editor.edit(editBuilder => {
 				editBuilder.replace(editor.selection, newDocumentText);
 			});
